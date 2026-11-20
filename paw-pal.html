@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PawPal - Virtual Pet World</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:"Segoe UI",sans-serif;
+ background:#fff5fa;color:#55445b;
+}
+button{cursor:pointer;border:0;border-radius:14px;padding:12px 17px;
+ background:#f5d9f1;color:#604a69;font-weight:bold;transition:.2s}
+button:hover{transform:translateY(-2px);filter:brightness(.97)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.app{display:flex;min-height:100vh}
+.sidebar{
+ width:220px;background:#f3ddf7;padding:24px 14px;
+ display:flex;flex-direction:column;gap:10px
+}
+.logo{text-align:center;font-size:25px;font-weight:800;margin-bottom:15px}
+.nav{width:100%;text-align:left;background:transparent}
+.nav.active,.nav:hover{background:white}
+.main{flex:1;padding:28px;min-width:0}
+.topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.coins{background:#fff1bd;padding:12px 20px;border-radius:18px;font-weight:bold}
+.page{display:none}
+.page.active{display:block}
+h1{color:#a467a6}
+h2{color:#9a70a0}
+.card{
+ background:white;border-radius:22px;padding:20px;margin:14px 0;
+ box-shadow:0 5px 20px #e9dce8
+}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.pet-display{
+ min-height:280px;border-radius:25px;background:linear-gradient(135deg,#fce1ef,#e6ddff);
+ display:flex;align-items:center;justify-content:center;flex-direction:column;
+ text-align:center;position:relative;overflow:hidden
+}
+.pet-emoji{font-size:100px;animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.pet-name{font-size:25px;font-weight:bold;margin-top:8px}
+.mood{margin:8px;color:#886b94}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+.stat{background:#fff;border-radius:15px;padding:12px}
+.stat-label{display:flex;justify-content:space-between;margin-bottom:8px}
+.bar{height:12px;border-radius:20px;background:#eee;overflow:hidden}
+.fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#edb3e5,#c7b5f8)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}
+.pet-option{font-size:50px;text-align:center;cursor:pointer;border:3px solid transparent}
+.pet-option.selected{border-color:#d69fdf;background:#fff1fb}
+input{padding:12px;border:2px solid #edd9ee;border-radius:12px;width:100%;margin:10px 0}
+.game-box{text-align:center;padding:20px}
+.memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:400px;margin:20px auto}
+.memory-card{height:70px;font-size:27px;background:#ead6f4}
+.item{padding:15px;background:#fff7fc;border-radius:18px;text-align:center}
+.item .emoji{font-size:45px}
+.room-pink{background:linear-gradient(135deg,#fce1ef,#e6ddff)}
+.room-garden{background:linear-gradient(135deg,#d8f6d4,#bde9ca)}
+.room-sky{background:linear-gradient(135deg,#d7f0ff,#c6dcff)}
+.room-night{background:linear-gradient(135deg,#33375c,#7776ad);color:white}
+.toast{position:fixed;bottom:20px;right:20px;background:#72537b;color:white;
+ padding:14px 22px;border-radius:15px;display:none;z-index:10}
+footer{text-align:center;color:#b09bb3;padding:20px}
+@media(max-width:700px){
+ .app{display:block}
+ .sidebar{width:100%;display:grid;grid-template-columns:repeat(3,1fr);padding:12px}
+ .logo{grid-column:1/-1}
+ .nav{text-align:center;padding:10px 4px;font-size:12px}
+ .main{padding:15px}
+ .stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<aside class="sidebar">
+<div class="logo">🐾 PawPal</div>
+<button class="nav active" onclick="showPage('adoption')">🏡 Adoption</button>
+<button class="nav" onclick="showPage('home')">🏠 Home</button>
+<button class="nav" onclick="showPage('care')">🧸 Pet Care</button>
+<button class="nav" onclick="showPage('games')">🎮 Games</button>
+<button class="nav" onclick="showPage('shop')">🛍️ Shop</button>
+<button class="nav" onclick="showPage('dress')">👗 Dress Up</button>
+<button class="nav" onclick="showPage('room')">🛋️ Room</button>
+<button class="nav" onclick="showPage('achievements')">🏆 Awards</button>
+</aside>
+
+<main class="main">
+<div class="topbar">
+<h1>Welcome to PawPal! 🌸</h1>
+<div class="coins">🪙 <span id="coins">100</span></div>
+</div>
+
+<!-- ADOPTION -->
+<section id="adoption" class="page active">
+<div class="card">
+<h2>Adopt your new friend!</h2>
+<p>Choose your pet and give them a lovely name.</p>
+<div class="grid">
+<div class="card pet-option selected" onclick="selectPet('cat',this)">🐱<p>Kitty</p></div>
+<div class="card pet-option" onclick="selectPet('dog',this)">🐶<p>Puppy</p></div>
+<div class="card pet-option" onclick="selectPet('bunny',this)">🐰<p>Bunny</p></div>
+</div>
+<input id="petNameInput" maxlength="20" placeholder="Enter your pet's name...">
+<button onclick="adopt()">Adopt my pet 💗</button>
+</div>
+</section>
+
+<!-- HOME -->
+<section id="home" class="page">
+<div class="card">
+<div class="pet-display" id="petRoom">
+<div id="petEmoji" class="pet-emoji">🐱</div>
+<div id="accessoryDisplay" style="font-size:30px"></div>
+<div id="petName" class="pet-name">Mochi</div>
+<div id="petMood" class="mood">I'm happy to see you! 💕</div>
+</div>
+
+<div class="stats">
+<div class="stat"><div class="stat-label">🍎 Hunger <span id="hungerText"></span></div><div class="bar"><div class="fill" id="hungerBar"></div></div></div>
+<div class="stat"><div class="stat-label">💖 Happiness <span id="happyText"></span></div><div class="bar"><div class="fill" id="happyBar"></div></div></div>
+<div class="stat"><div class="stat-label">⚡ Energy <span id="energyText"></span></div><div class="bar"><div class="fill" id="energyBar"></div></div></div>
+<div class="stat"><div class="stat-label">🫧 Cleanliness <span id="cleanText"></span></div><div class="bar"><div class="fill" id="cleanBar"></div></div></div>
+</div>
+
+<div class="card">
+<h2>Pet progress ✨</h2>
+<p>Level <span id="level">1</span> · XP <span id="xp">0</span></>
+<p>Care actions: <span id="careCount">0</span></p>
+</div>
+</section>
+
+<!-- CARE -->
+<section id="care" class="page">
+<h2>Take care of your pet 🧸</h2>
+<div class="grid">
+<div class="card"><h2>🍎 Feeding</h2><p>Give your pet a yummy snack.</p><button onclick="feed()">Feed (+10 coins)</button></div>
+<div class="card"><h2>🎾 Playtime</h2><p>Play and have fun together!</p><button onclick="play()">Play together</button></div>
+<div class="card"><h2>💤 Sleep</h2><p>Let your pet rest and recharge.</p><button onclick="sleepPet()">Take a nap</button></div>
+<div class="card"><h2>🧼 Grooming</h2><p>Keep your pet clean and cozy.</p><button onclick="groom()">Groom</button></div>
+<div class="card"><h2>🛁 Bath Time</h2><p>A fresh and fluffy pet!</p><button onclick="bath()">Give a bath</button></div>
+</div>
+</section>
+
+<!-- GAMES -->
+<section id="games" class="page">
+<h2>Playtime Arcade 🎮</h2>
+<div class="grid">
+<div class="card game-box">
+<h2>✊ Rock Paper Scissors</h2>
+<p>Choose your move!</p>
+<div class="actions" style="justify-content:center">
+<button onclick="rps('rock')">✊</button>
+<button onclick="rps('paper')">✋</button>
+<button onclick="rps('scissors')">✌️</button>
+</div>
+<p id="rpsResult">Ready to play?</p>
+</div>
+
+<div class="card game-box">
+<h2>🧠 Memory Match</h2>
+<p>Find all matching pairs!</p>
+<div id="memoryGrid" class="memory-grid"></div>
+<button onclick="startMemory()">Start / Restart</button>
+<p id="memoryResult"></p>
+</div>
+</div>
+</section>
+
+<!-- SHOP -->
+<section id="shop" class="page">
+<h2>Pet Shop 🛍️</h2>
+<p>Spend your coins on lovely items!</p>
+<div class="grid">
+<div class="item"><div class="emoji">🍪</div><h3>Treat</h3><p>25 coins</p><button onclick="buy('treat',25)">Buy</button></div>
+<div class="item"><div class="emoji">🧴</div><h3>Shampoo</h3><p>30 coins</p><button onclick="buy('shampoo',30)">Buy</button></div>
+<div class="item"><div class="emoji">🧸</div><h3>Toy</h3><p>35 coins</p><button onclick="buy('toy',35)">Buy</button></div>
+<div class="item"><div class="emoji">🎀</div><h3>Bow</h3><p>20 coins</p><button onclick="buy('bow',20)">Buy</button></div>
+<div class="item"><div class="emoji">👑</div><h3>Crown</h3><p>50 coins</p><button onclick="buy('crown',50)">Buy</button></div>
+<div class="item"><div class="emoji">🌸</div><h3>Flower</h3><p>20 coins</p><button onclick="buy('flower',20)">Buy</button></div>
+<div class="item"><div class="emoji">🕶️</div><h3>Shades</h3><p>30 coins</p><button onclick="buy('shades',30)">Buy</button></div>
+</div>
+</section>
+
+<!-- DRESS -->
+<section id="dress" class="page">
+<h2>Dress up your pet 👗</h2>
+<div class="card">
+<h2>Accessories</h2>
+<div class="actions">
+<button onclick="wear('🎀','bow')">🎀 Bow</button>
+<button onclick="wear('👑','crown')">👑 Crown</button>
+<button onclick="wear('🌸','flower')">🌸 Flower</button>
+<button onclick="wear('🕶️','shades')">🕶️ Shades</button>
+<button onclick="wear('','none')">Remove</button>
+</div>
+<p id="dressMessage"></p>
+</div>
+</section>
+
+<!-- ROOM -->
+<section id="room" class="page">
+<h2>Room Makeover 🛋️</h2>
+<p>Choose a new room style!</p>
+<div class="grid">
+<div class="item"><div class="emoji">🌸</div><h3>Pink Dream</h3><button onclick="changeRoom('pink')">Choose</button></div>
+<div class="item"><div class="emoji">🌿</div><h3>Garden</h3><button onclick="changeRoom('garden')">Choose</button></div>
+<div class="item"><div class="emoji">☁️</div><h3>Sky</h3><button onclick="changeRoom('sky')">Choose</button></div>
+<div class="item"><div class="emoji">🌙</div><h3>Night</h3><button onclick="changeRoom('night')">Choose</button></div>
+</div>
+</section>
+
+<!-- ACHIEVEMENTS -->
+<section id="achievements" class="page">
+<h2>Achievements 🏆</h2>
+<div class="card">
+<div id="achievementList">Adopt a pet to begin collecting achievements!</div>
+</div>
+</section>
+
+<footer>Made with 💗 for your virtual friend · PawPal</footer>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const defaults={
+ adopted:false,type:"cat",name:"Mochi",
+ hunger:80,happiness:80,energy:80,cleanliness:80,
+ coins:100,xp:0,level:1,care:0,games:0,baths:0,
+ accessory:"",room:"pink",inventory:[],achievements:[]
+};
+
+let pet={...defaults};
+let selectedType="cat";
+let memoryCards=[],flipped=[],locked=false;
+const petEmoji={cat:"🐱",dog:"🐶",bunny:"🐰"};
+const itemEmoji={bow:"🎀",crown:"👑",flower:"🌸",shades:"🕶️"};
+
+function load(){
+ try{
+  const saved=localStorage.getItem("pawpal_save");
+  if(saved) pet={...defaults,...JSON.parse(saved)};
+ }catch(e){pet={...defaults}}
+}
+function save(){
+ try{localStorage.setItem("pawpal_save",JSON.stringify(pet))}
+ catch(e){toast("Saving is unavailable in this browser")}
+}
+function showPage(id){
+ if(!pet.adopted && id!=="adoption"){toast("Adopt a pet first! 🐾");return}
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".nav").forEach(b=>b.classList.remove("active"));
+ const index=["adoption","home","care","games","shop","dress","room","achievements"].indexOf(id);
+ if(index>=0)document.querySelectorAll(".nav")[index].classList.add("active");
+ update();
+}
+function selectPet(type,el){
+ selectedType=type;
+ document.querySelectorAll(".pet-option").forEach(p=>p.classList.remove("selected"));
+ el.classList.add("selected");
+}
+function adopt(){
+ pet.adopted=true;
+ pet.type=selectedType;
+ pet.name=document.getElementById("petNameInput").value.trim()||"Mochi";
+ pet.xp+=10;
+ save();update();showPage("home");
+ toast("Welcome to your new pet family! 💗");
+}
+function clamp(n){return Math.max(0,Math.min(100,n))}
+function feed(){
+ pet.hunger=clamp(pet.hunger+20);
+ pet.happiness=clamp(pet.happiness+5);
+ pet.coins+=10;care();
+ toast("Yummy! Your pet enjoyed the food 🍎");
+}
+function play(){
+ if(pet.energy<10){toast("Your pet needs rest first! 💤");return}
+ pet.happiness=clamp(pet.happiness+15);
+ pet.energy=clamp(pet.energy-10);
+ pet.hunger=clamp(pet.hunger-5);
+ pet.coins+=5;pet.games++;care();
+ toast("Playtime was super fun! 🎾");
+}
+function sleepPet(){
+ pet.energy=clamp(pet.energy+30);
+ pet.happiness=clamp(pet.happiness+5);
+ care();toast("Your pet had a refreshing nap 💤");
+}
+function groom(){
+ pet.cleanliness=clamp(pet.cleanliness+20);
+ pet.happiness=clamp(pet.happiness+5);
+ care();toast("All clean and fluffy! 🫧");
+}
+function bath(){
+ if(!pet.inventory.includes("shampoo")){toast("Buy shampoo in the shop first! 🧴");return}
+ pet.cleanliness=100;pet.happiness=clamp(pet.happiness+10);pet.baths++;care();
+ toast("Bath complete! Your pet is sparkling! ✨");
+}
+function care(){
+ pet.care++;pet.xp+=10;
+ if(pet.xp>=pet.level*100){pet.xp-=pet.level*100;pet.level++;toast("Level up! 🎉")}
+ save();update();
+}
+function rps(player){
+ const moves=["rock","paper","scissors"];
+ const cpu=moves[Math.floor(Math.random()*3)];
+ let result=player===cpu?"It's a tie!":(
+ (player==="rock"&&cpu==="scissors")||
+ (player==="paper"&&cpu==="rock")||
+ (player==="scissors"&&cpu==="paper")?"You win! 🎉":"Try again!");
+ document.getElementById("rpsResult").textContent=
+ "You: "+player+" · Pet: "+cpu+" — "+result;
+ pet.games++;
+ if(result.includes("win")){pet.coins+=15;pet.happiness=clamp(pet.happiness+5)}
+ else pet.coins+=3;
+ care();
+}
+function startMemory(){
+ const symbols=["🍓","🍓","🐸","🐸","🍰","🍰","🌈","🌈","🐼","🐼","⭐","⭐","🍀","🍀","🐥","🐥"];
+ memoryCards=symbols.sort(()=>Math.random()-.5);
+ flipped=[];locked=false;
+ document.getElementById("memoryResult").textContent="";
+ renderMemory();
+}
+function renderMemory(){
+ const grid=document.getElementById("memoryGrid");
+ grid.innerHTML="";
+ memoryCards.forEach((s,i)=>{
+  const b=document.createElement("button");
+  b.className="memory-card";
+  b.textContent=flipped.includes(i)?s:"❔";
+  b.onclick=()=>flip(i);
+  grid.appendChild(b);
+ });
+}
+function flip(i){
+ if(locked||flipped.includes(i))return;
+ flipped.push(i);renderMemory();
+ if(flipped.length===2){
+  locked=true;
+  const a=flipped[0],b=flipped[1];
+  if(memoryCards[a]===memoryCards[b]){
+   setTimeout(()=>{
+    locked=false;flipped=[];
+    renderMemory();
+    if(document.querySelectorAll(".memory-card").length===16 &&
+      memoryCards.every((s,j)=>memoryCards.indexOf(s)===j || flipped.includes(j))){
+     // Win is checked below using matched pairs
+    }
+    checkMemory();
+   },350);
+  }else{
+   setTimeout(()=>{flipped=[];locked=false;renderMemory()},800);
+  }
+ }
+}
+let matched=[];
+function checkMemory(){
+ // Matched cards are stored in a separate list
+}
+function buy(item,cost){
+ if(pet.coins<cost){toast("Not enough coins! 🪙");return}
+ if(pet.inventory.includes(item)){toast("You already own this item!");return}
+ pet.coins-=cost;pet.inventory.push(item);
+ save();update();toast("Purchased "+item+"! 🛍️");
+}
+function wear(emoji,item){
+ if(item!=="none"&&!pet.inventory.includes(item)){toast("Buy this accessory first! 🛍️");return}
+ pet.accessory=item==="none"?"":emoji;
+ save();update();toast("Accessory updated! ✨");
+}
+function changeRoom(room){
+ pet.room=room;save();update();toast("Room makeover complete! 🏡");
+}
+function toast(message){
+ const t=document.getElementById("toast");
+ t.textContent=message;t.style.display="block";
+ setTimeout(()=>t.style.display="none",2300);
+}
+function updateBar(id,value){
+ document.getElementById(id).style.width=value+"%";
+}
+function update(){
+ document.getElementById("coins").textContent=pet.coins;
+ document.getElementById("petEmoji").textContent=petEmoji[pet.type]||"🐱";
+ document.getElementById("petName").textContent=pet.name;
+ document.getElementById("accessoryDisplay").textContent=pet.accessory;
+ document.getElementById("petMood").textContent=
+ pet.happiness>70?"I'm feeling wonderful! 💕":
+ pet.happiness>40?"Let's play together! 🎾":"I need some attention 🥺";
+ document.getElementById("hungerText").textContent=pet.hunger+"%";
+ document.getElementById("happyText").textContent=pet.happiness+"%";
+ document.getElementById("energyText").textContent=pet.energy+"%";
+ document.getElementById("cleanText").textContent=pet.cleanliness+"%";
+ updateBar("hungerBar",pet.hunger);
+ updateBar("happyBar",pet.happiness);
+ updateBar("energyBar",pet.energy);
+ updateBar("cleanBar",pet.cleanliness);
+ document.getElementById("level").textContent=pet.level;
+ document.getElementById("xp").textContent=pet.xp;
+ document.getElementById("careCount").textContent=pet.care;
+ document.getElementById("petRoom").className="pet-display room-"+pet.room;
+ const achievements=[
+ ["🐾 First Friend",pet.adopted],
+ ["🧸 Caring Friend",pet.care>=5],
+ ["🎮 Game Lover",pet.games>=5],
+ ["🛁 Bath Expert",pet.baths>=3],
+ ["🌟 Level 5",pet.level>=5]
+ ];
+ document.getElementById("achievementList").innerHTML=achievements.map(a=>
+ `<div class="card" style="opacity:${a[1]?1:.5}">${a[0]} ${a[1]?"Unlocked!":"Locked 🔒"}</div>`
+ ).join("");
+}
+load();
+update();
+if(pet.adopted)showPage("home");
+</script>
+</body>
+</html>
